@@ -1,11 +1,13 @@
 package com.example.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class BaseController {
+    @Autowired
+    HttpServletRequest req;
 
-    @GetMapping("/test")
-    public Object test(){
-        return "obj";
-    }
+
+
 }

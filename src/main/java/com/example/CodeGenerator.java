@@ -16,90 +16,105 @@ import java.util.Scanner;
 
 public class CodeGenerator {
 
-    private static String scanner(String in){
+    public static String scanner(String tip) {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("请输入"+in + ":");
-        if (scanner.hasNext()){
-            String next = scanner.next();
-            if(StringUtils.isNotEmpty(next)){
-                return next;
+        StringBuilder help = new StringBuilder();
+        help.append("请输入" + tip + "：");
+        System.out.println(help.toString());
+        if (scanner.hasNext()) {
+            String ipt = scanner.next();
+            if (StringUtils.isNotEmpty(ipt)) {
+                return ipt;
             }
         }
-        throw new MybatisPlusException("请输入正确的"+in+"! ");
+        throw new MybatisPlusException("请输入正确的" + tip + "！");
     }
 
     public static void main(String[] args) {
-        AutoGenerator autoGenerator = new AutoGenerator();
-        //配置GlobalConfig
-        GlobalConfig globalConfig = new GlobalConfig();
-        globalConfig.setOutputDir(System.getProperty("user.dir")+"/src/main/java");
-        globalConfig.setAuthor("nostalgia");
-        globalConfig.setOpen(false);
-        //service接口不加i
-        globalConfig.setServiceName("%sService");
-        autoGenerator.setGlobalConfig(globalConfig);
+        // 代码生成器
+        AutoGenerator mpg = new AutoGenerator();
 
-        //配置数据源
-        DataSourceConfig dataSourceConfig = new DataSourceConfig();
-        dataSourceConfig.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=UTC");
-        dataSourceConfig.setDriverName("com.mysql.cj.jdbc.Driver");
-        dataSourceConfig.setUsername("root");
-        dataSourceConfig.setPassword("root");
-        autoGenerator.setDataSource(dataSourceConfig);
+        // 全局配置
+        GlobalConfig gc = new GlobalConfig();
+        String projectPath = System.getProperty("user.dir");
+        gc.setOutputDir(projectPath + "/src/main/java");
+//        gc.setOutputDir("D:\\test");
+        gc.setAuthor("notalgia");
+        gc.setOpen(false);
+        // gc.setSwagger2(true); 实体属性 Swagger2 注解
+        gc.setServiceName("%sService");
+        mpg.setGlobalConfig(gc);
 
-        //包配置
-        PackageConfig packageConfig = new PackageConfig();
-        packageConfig.setModuleName(null);
-        packageConfig.setParent("com.example");
-        autoGenerator.setPackageInfo(packageConfig);
+        // 数据源配置
+        DataSourceConfig dsc = new DataSourceConfig();
+        dsc.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=UTC");
+        // dsc.setSchemaName("public");
+        dsc.setDriverName("com.mysql.cj.jdbc.Driver");
+        dsc.setUsername("root");
+        dsc.setPassword("admin123");
+        mpg.setDataSource(dsc);
 
-        //设置模板引擎
-        autoGenerator.setTemplateEngine(new FreemarkerTemplateEngine());
+        // 包配置
+        PackageConfig pc = new PackageConfig();
+        pc.setModuleName(null);
+        pc.setParent("com.example");
+        mpg.setPackageInfo(pc);
 
-        //自定义配置
-        InjectionConfig injectionConfig  = new InjectionConfig() {
+        // 自定义配置
+        InjectionConfig cfg = new InjectionConfig() {
             @Override
             public void initMap() {
-                //to do nothing
+                // to do nothing
             }
         };
-        //模板引擎是freemarker
-        String templatePath = "/templates/mapper.xml.ftl";
 
-        //自定义输出配置
-        List<FileOutConfig> fileList = new ArrayList<>();
-        fileList.add(new FileOutConfig(templatePath) {
+        // 如果模板引擎是 freemarker
+        String templatePath = "/templates/mapper.xml.ftl";
+        // 如果模板引擎是 velocity
+        // String templatePath = "/templates/mapper.xml.vm";
+
+        // 自定义输出配置
+        List<FileOutConfig> focList = new ArrayList<>();
+        // 自定义配置会被优先输出
+        focList.add(new FileOutConfig(templatePath) {
             @Override
             public String outputFile(TableInfo tableInfo) {
-                return System.getProperty("user.dir")+"/src/main/resources/mapper/"+packageConfig.getModuleName()+
-                        "/"+tableInfo.getEntityName()+"Mapper"+StringPool.DOT_XML;
+                // 自定义输出文件名 ， 如果你 Entity 设置了前后缀、此处注意 xml 的名称会跟着发生变化！！
+                return projectPath + "/src/main/resources/mapper/" + pc.getModuleName()
+                        + "/" + tableInfo.getEntityName() + "Mapper" + StringPool.DOT_XML;
             }
         });
-        injectionConfig.setFileOutConfigList(fileList);
-        autoGenerator.setCfg(injectionConfig);
 
-        //模板配置
+        cfg.setFileOutConfigList(focList);
+        mpg.setCfg(cfg);
+
+        // 配置模板
         TemplateConfig templateConfig = new TemplateConfig();
+
+        // 配置自定义输出模板
+        //指定自定义模板路径，注意不要带上.ftl/.vm, 会根据使用的模板引擎自动识别
+        // templateConfig.setEntity("templates/entity2.java");
+        // templateConfig.setService();
+        // templateConfig.setController();
+
         templateConfig.setXml(null);
-        autoGenerator.setTemplate(templateConfig);
+        mpg.setTemplate(templateConfig);
 
-        //策略配置
-        StrategyConfig strategyConfig = new StrategyConfig();
-        strategyConfig.setNaming(NamingStrategy.underline_to_camel);
-        strategyConfig.setColumnNaming(NamingStrategy.underline_to_camel);
-        strategyConfig.setSuperEntityClass("com.nostalgia.mybatis_plus.BaseEntity");
-        strategyConfig.setEntityLombokModel(true);
-        strategyConfig.setRestControllerStyle(true);
-        strategyConfig.setSuperControllerClass("com.nostalgia.mybatis_plus.BaseController");
-        strategyConfig.setInclude(scanner("表名，多个英文逗号分割").split(","));
-        strategyConfig.setSuperEntityColumns("id","created","modified","status");
-        strategyConfig.setControllerMappingHyphenStyle(true);
-        strategyConfig.setTablePrefix(packageConfig.getModuleName() + "_");
-        autoGenerator.setStrategy(strategyConfig);
-
-        autoGenerator.setTemplateEngine(new FreemarkerTemplateEngine());
-        autoGenerator.execute();
-
-
+        // 策略配置
+        StrategyConfig strategy = new StrategyConfig();
+        strategy.setNaming(NamingStrategy.underline_to_camel);
+        strategy.setColumnNaming(NamingStrategy.underline_to_camel);
+        strategy.setSuperEntityClass("com.example.entity.BaseEntity");
+        strategy.setEntityLombokModel(true);
+        strategy.setRestControllerStyle(true);
+        strategy.setSuperControllerClass("com.example.controller.BaseController");
+        strategy.setInclude(scanner("表名，多个英文逗号分割").split(","));
+        strategy.setSuperEntityColumns("id", "created", "modified", "status");
+        strategy.setControllerMappingHyphenStyle(true);
+        strategy.setTablePrefix(pc.getModuleName() + "_");
+        mpg.setStrategy(strategy);
+        mpg.setTemplateEngine(new FreemarkerTemplateEngine());
+        mpg.execute();
     }
+
 }

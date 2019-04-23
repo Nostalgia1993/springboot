@@ -1,18 +1,19 @@
-
-server:
-  port: 8084
-
-
----
-
-#开发配置
+# DataSource Config
 spring:
   datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/test?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=UTC
     username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: admin123
   freemarker:
     cache: false
-
+  redis:
+    host: 47.97.213.112
+    port: 6379
+#    哨兵模式
+#    sentinel:
+#      master: mymaster
+#      nodes:
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**Mapper.xml
 
