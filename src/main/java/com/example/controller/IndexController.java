@@ -11,4 +11,5 @@ public class IndexController extends BaseController {
         req.setAttribute("base",req.getContextPath());
         return "index";
     }
+
 }

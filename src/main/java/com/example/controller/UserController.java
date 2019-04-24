@@ -5,10 +5,9 @@ import com.example.entity.User;
 import com.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RestController;
-import com.example.controller.BaseController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -31,6 +30,12 @@ public class UserController extends BaseController {
         return userService.list();
     }
 
+    @RequestMapping("/testE")
+    public List<User> testE(){
+        User user = userService.getById("1");
+        LocalDateTime birthday = user.getBirthday();
+        return null;
+    }
 
 
 
